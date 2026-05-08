@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVEPLUS | عالم الأفلام والمسلسلات</title>
+    <meta name="google-site-verification" content="bwAl13J6lcd3TCfD1j3LInmM4vK8F7Pg-_RPDBGYwb4" />
+    <meta name="google-site-verification" content="lGr0BqFy4a_QMKBfd49JFn-21_MGSjEbLWFf7d1bUGw" />
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7876868777201120" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-7876868777201120">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E50914;
+            --bg: #0b0b0b;
+            --surface: #1a1a1a;
+            --text: #ffffff;
+            --accent: #00d4ff;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            transition: 0.3s;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(0,0,0,0.5), var(--bg)), url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+
+        .btn-play {
+            background: var(--primary);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-play:hover {
+            transform: scale(1.05);
+            background: #ff0f1b;
+        }
+
+        /* Categories Section */
+        .categories {
+            padding: 50px 5%;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            background: var(--surface);
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .tab:hover, .tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Movie Grid */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .movie-card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 15px;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+        }
+
+        .movie-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .movie-meta {
+            font-size: 0.9rem;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Anime Section */
+        .anime-section {
+            background: #111;
+            padding: 60px 5%;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            border-right: 5px solid var(--primary);
+            padding-right: 15px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 50px 5%;
+            border-top: 1px solid #333;
+            text-align: center;
+            color: #777;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.5rem; }
+            nav ul { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="logo">LIVEPLUS</div>
+        <nav>
+            <ul>
+                <li><a href="#">الرئيسية</a></li>
+                <li><a href="#">أفلام</a></li>
+                <li><a href="#">مسلسلات</a></li>
+                <li><a href="#">أنمي</a></li>
+                <li><a href="#">المفضلة</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>شاهد أفضل الأفلام والمسلسلات مجاناً</h1>
+            <p>استمتع بتجربة سينمائية فريدة على هاتفك مع تطبيق LIVEPLUS. أفلام، مسلسلات، وقنوات مباشرة بجودة عالية.</p>
+            <div class="cta-buttons">
+                <a href="https://raw.githubusercontent.com/sidfloki/LivePlus-App/main/LivePlus_Final_Fixed_Connection.apk" class="btn btn-primary" target="_blank">تحميل مباشر (GitHub)</a>
+                <a href="https://www.mediafire.com/file/o56q0v7st50eo6p/LivePlus_Final_Fixed_Connection.apk/file" class="btn btn-primary" target="_blank" style="background: #2d89ef;">رابط بديل (MediaFire)</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories">
+        <h2 class="section-title">التصنيفات المميزة</h2>
+        <div class="category-tabs">
+            <div class="tab active">الكل</div>
+            <div class="tab">Action (أكشن)</div>
+            <div class="tab">Fantasy (فانتازيا)</div>
+            <div class="tab">Comedy (كوميدي)</div>
+            <div class="tab">Horror (رعب)</div>
+        </div>
+
+        <div class="movie-grid" id="movie-grid">
+            <!-- Movie cards will be loaded here -->
+            <div class="movie-card">
+                <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&q=80" alt="Action Movie">
+                <div class="movie-info">
+                    <h3>بطل العدالة</h3>
+                    <div class="movie-meta">
+                        <span>2024</span>
+                        <span>أكشن</span>
+                    </div>
+                </div>
+            </div>
+            <div class="movie-card">
+                <img src="https://images.unsplash.com/photo-1616530940355-351fabd9524b?auto=format&fit=crop&w=400&q=80" alt="Fantasy Movie">
+                <div class="movie-info">
+                    <h3>مملكة السحر</h3>
+                    <div class="movie-meta">
+                        <span>2023</span>
+                        <span>فانتازيا</span>
+                    </div>
+                </div>
+            </div>
+            <div class="movie-card">
+                <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&q=80" alt="Comedy Movie">
+                <div class="movie-info">
+                    <h3>ضحك متواصل</h3>
+                    <div class="movie-meta">
+                        <span>2024</span>
+                        <span>كوميدي</span>
+                    </div>
+                </div>
+            </div>
+            <div class="movie-card">
+                <img src="https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=400&q=80" alt="Horror Movie">
+                <div class="movie-info">
+                    <h3>منزل الأشباح</h3>
+                    <div class="movie-meta">
+                        <span>2024</span>
+                        <span>رعب</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="anime-section">
+        <h2 class="section-title">أحدث الأنمي</h2>
+        <div class="movie-grid">
+             <div class="movie-card">
+                <img src="https://images.unsplash.com/photo-1578632292335-df3abbb0d586?auto=format&fit=crop&w=400&q=80" alt="Anime">
+                <div class="movie-info">
+                    <h3>ناروتو: الجيل الجديد</h3>
+                    <div class="movie-meta">
+                        <span>الحلقة 12</span>
+                        <span>أكشن/أنمي</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="screenshots" style="padding: 50px 20px; text-align: center; background: #000;">
+        <h2 style="margin-bottom: 30px;">صور من داخل التطبيق</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <img src="https://a.top4top.io/p_3779uwm7l1.png" alt="Screenshot 1" style="width: 100%; border-radius: 10px;">
+            <img src="https://b.top4top.io/p_3779gpuu32.png" alt="Screenshot 2" style="width: 100%; border-radius: 10px;">
+            <img src="https://c.top4top.io/p_377976yyo3.png" alt="Screenshot 3" style="width: 100%; border-radius: 10px;">
+            <img src="https://d.top4top.io/p_3779ep1lx4.png" alt="Screenshot 4" style="width: 100%; border-radius: 10px;">
+        </div>
+    </section>
+
+    <footer>
+        <a href="http://t.me/liveplusapp98" target="_blank" style="background: #0088cc; color: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; display: inline-block; margin-bottom: 20px;">
+            تواصل معنا عبر تيليجرام
+        </a>
+        <p>&copy; 2026 LIVEPLUS. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 50) {
+                header.style.backgroundColor = 'rgba(11, 11, 11, 0.95)';
+            } else {
+                header.style.backgroundColor = 'transparent';
+            }
+        });
+    </script>
+</body>
+</html>

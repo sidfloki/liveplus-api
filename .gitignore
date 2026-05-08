@@ -1,0 +1,31 @@
+# Build and binaries
+build/
+bin/
+obj/
+*.apk
+*.exe
+*.dll
+*.so
+*.o
+*.pyc
+__pycache__/
+
+# IDEs
+.idea/
+.vscode/
+.gradle/
+*.iml
+
+# Firebase and local configs
+.firebase/
+local.properties
+google-services.json
+
+# Logs
+scripts/fetch_log.txt
+*.log
+
+# Workspace specific
+node_modules/
+dist/
+public/
