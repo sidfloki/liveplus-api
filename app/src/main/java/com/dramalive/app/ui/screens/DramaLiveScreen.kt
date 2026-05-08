@@ -329,95 +329,94 @@ fun DramaLiveScreen(
             )
         }
 
-            // Verification Reminder
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user != null && !user.isEmailVerified) {
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 100.dp, start = 20.dp, end = 20.dp),
-                    color = NetflixRed.copy(alpha = 0.9f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Rounded.Info, contentDescription = null, tint = PureWhite)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "يرجى تفعيل بريدك الإلكتروني للحصول على كافة الميزات.",
-                            color = PureWhite,
-                            fontSize = 12.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        TextButton(onClick = { 
-                            user.sendEmailVerification()
-                            Toast.makeText(context, "تم إعادة إرسال رابط التفعيل", Toast.LENGTH_SHORT).show()
-                        }) {
-                            Text("إعادة إرسال", color = PureWhite, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-
-            // Bottom UI: Nav Bar + Ad Banner
-            Column(
+        // Verification Reminder
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null && !user.isEmailVerified) {
+            Surface(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 100.dp, start = 20.dp, end = 20.dp),
+                color = NetflixRed.copy(alpha = 0.9f),
+                shape = RoundedCornerShape(8.dp)
             ) {
-                // Gradient fade above nav bar
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(30.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, DeepBlack.copy(alpha = 0.95f))
-                            )
-                        )
-                )
-
-                NavigationBar(
-                    containerColor = DeepBlack.copy(alpha = 0.97f),
-                    tonalElevation = 0.dp,
-                    modifier = Modifier.navigationBarsPadding()
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BottomNavItem.entries.forEach { item ->
-                        val isSelected = currentTab == item
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = { currentTab = item },
-                            icon = {
-                                Icon(
-                                    imageVector = if (isSelected) item.selectedIcon else item.icon,
-                                    contentDescription = item.label,
-                                    modifier = Modifier.size(if (isSelected) 28.dp else 24.dp)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = item.label,
-                                    fontSize = 10.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    maxLines = 1
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = NetflixRed,
-                                selectedTextColor = NetflixRed,
-                                unselectedIconColor = MutedGray,
-                                unselectedTextColor = MutedGray,
-                                indicatorColor = NetflixRed.copy(alpha = 0.15f)
-                            )
-                        )
+                    Icon(Icons.Rounded.Info, contentDescription = null, tint = PureWhite)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "يرجى تفعيل بريدك الإلكتروني للحصول على كافة الميزات.",
+                        color = PureWhite,
+                        fontSize = 12.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { 
+                        user.sendEmailVerification()
+                        Toast.makeText(context, "تم إعادة إرسال رابط التفعيل", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Text("إعادة إرسال", color = PureWhite, fontWeight = FontWeight.Bold)
                     }
                 }
-                
-                // Add Ad Banner at the very bottom
-                com.dramalive.app.ui.components.AdBanner()
             }
+        }
+
+        // Bottom UI: Nav Bar + Ad Banner
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+        ) {
+            // Gradient fade above nav bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, DeepBlack.copy(alpha = 0.95f))
+                        )
+                    )
+            )
+
+            NavigationBar(
+                containerColor = DeepBlack.copy(alpha = 0.97f),
+                tonalElevation = 0.dp,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
+                BottomNavItem.entries.forEach { item ->
+                    val isSelected = currentTab == item
+                    NavigationBarItem(
+                        selected = isSelected,
+                        onClick = { currentTab = item },
+                        icon = {
+                            Icon(
+                                imageVector = if (isSelected) item.selectedIcon else item.icon,
+                                contentDescription = item.label,
+                                modifier = Modifier.size(if (isSelected) 28.dp else 24.dp)
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = item.label,
+                                fontSize = 10.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                maxLines = 1
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = NetflixRed,
+                            selectedTextColor = NetflixRed,
+                            unselectedIconColor = MutedGray,
+                            unselectedTextColor = MutedGray,
+                            indicatorColor = NetflixRed.copy(alpha = 0.15f)
+                        )
+                    )
+                }
+            }
+            
+            // Add Ad Banner at the very bottom
+            com.dramalive.app.ui.components.AdBanner()
         }
     }
 }
