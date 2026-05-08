@@ -481,8 +481,18 @@ def main():
     # Save log
     save_log(valid_servers, len(all_content))
 
-    logger.info("\n🎉 Done! Playlist generated successfully.")
-    logger.info("=" * 60)
+    # Save best credentials for APK
+    if valid_servers:
+        best = valid_servers[0]
+        creds = {
+            "host": best["host"],
+            "username": best["username"],
+            "password": best["password"],
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        with open("credentials.json", "w") as f:
+            json.dump(creds, f, indent=4)
+        logger.info("🔑 Best credentials saved to credentials.json")
 
 
 if __name__ == "__main__":

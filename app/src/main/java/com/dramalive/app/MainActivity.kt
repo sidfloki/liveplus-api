@@ -15,6 +15,10 @@ import com.dramalive.app.ui.screens.LoginScreen
 import com.dramalive.app.ui.theme.DramaLiveTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.android.gms.ads.MobileAds
+import com.dramalive.app.util.RemoteConfigManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
@@ -26,6 +30,11 @@ class MainActivity : ComponentActivity() {
         
         // Initialize AdMob
         MobileAds.initialize(this) {}
+
+        // Fetch latest Xtream credentials from GitHub Automation
+        CoroutineScope(Dispatchers.Main).launch {
+            RemoteConfigManager.updateRemoteConfig()
+        }
 
         authManager = AuthManager(this)
 

@@ -12,10 +12,14 @@ object Config {
     // Determine which URL to use (Global by default for worldwide access)
     val BASE_URL get() = if (GLOBAL_SERVER_URL.startsWith("https")) GLOBAL_SERVER_URL else "http://$LOCAL_SERVER_IP:$LOCAL_SERVER_PORT"
 
-    // Xtream Codes API Configuration (Backup)
-    const val XTREAM_BASE_URL = "http://Sameh68g.geekflarecdn.com/"
-    const val XTREAM_USERNAME = "sameh68g"
-    const val XTREAM_PASSWORD = "15472848"
+    // Remote Configuration (Automatic Updates)
+    const val REMOTE_CONFIG_URL = "https://raw.githubusercontent.com/sidfloki/liveplus-api/main/credentials.json"
+    const val REMOTE_M3U_URL = "https://raw.githubusercontent.com/sidfloki/liveplus-api/main/playlist.m3u"
+
+    // Xtream Codes API Configuration (Current/Default)
+    var XTREAM_BASE_URL = "http://Sameh68g.geekflarecdn.com/"
+    var XTREAM_USERNAME = "sameh68g"
+    var XTREAM_PASSWORD = "15472848"
     
     // API Endpoints
     const val API_GET_LIVE_STREAMS = "/player_api.php?username=%s&password=%s&action=get_live_streams"
