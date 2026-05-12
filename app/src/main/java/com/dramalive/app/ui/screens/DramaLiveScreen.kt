@@ -203,7 +203,6 @@ fun DramaLiveScreen(
             // Reset after launching
             selectedMedia = null
         }
-    }
 
     // Main Layout
     Box(modifier = Modifier.fillMaxSize().background(DeepBlack)) {
@@ -273,8 +272,8 @@ fun DramaLiveScreen(
                         scope.launch {
                             val infoResult = repository.getSeriesInfo(item.id.toString())
                             infoResult.onSuccess { info ->
-                                seasons = info.seasons
-                                episodes = info.episodes.getOrDefault("1", emptyList())
+                                seasons = info.seasons ?: emptyList()
+                                episodes = info.episodes?.getOrDefault("1", emptyList()) ?: emptyList()
                             }
                             isLoadingSeriesDetails = false
                         }
