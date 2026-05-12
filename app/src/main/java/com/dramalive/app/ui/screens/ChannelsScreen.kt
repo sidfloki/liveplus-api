@@ -171,7 +171,7 @@ fun ChannelCard(channel: MediaItem, onClick: () -> Unit) {
 
             // Live badge
             Surface(
-                color = NetflixRed,
+                color = Color(0xFFFF9800),
                 shape = RoundedCornerShape(3.dp),
                 modifier = Modifier
                     .padding(6.dp)

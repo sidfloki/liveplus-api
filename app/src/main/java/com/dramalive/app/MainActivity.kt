@@ -16,24 +16,37 @@ import com.dramalive.app.ui.theme.DramaLiveTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.android.gms.ads.MobileAds
 import com.dramalive.app.util.RemoteConfigManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
-    private var showLogin = mutableStateOf(true)
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private var showLogin = mutableStateOf(false)
     private var loginError = mutableStateOf<String?>(null)
+    private var isConfigLoaded = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Initialize Firebase Analytics
+        firebaseAnalytics = Firebase.analytics
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN, null)
+
         // Initialize AdMob
         MobileAds.initialize(this) {}
 
-        // Fetch latest Xtream credentials from GitHub Automation
-        CoroutineScope(Dispatchers.Main).launch {
-            RemoteConfigManager.updateRemoteConfig()
+        // Start Background Failover Service
+        val serviceIntent = android.content.Intent(this, com.dramalive.app.services.IPTVFailoverService::class.java)
+        startService(serviceIntent)
+
+        // Fetch latest Xtream credentials from Firebase
+        lifecycleScope.launch {
+            com.dramalive.app.util.RemoteConfigManager.updateRemoteConfig()
+            isConfigLoaded.value = true
+            loadInterstitialAd()
         }
 
         authManager = AuthManager(this)
@@ -51,8 +64,12 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val isShowingLogin by showLogin
                     val error by loginError
+                    val configLoaded by isConfigLoaded
 
-                    if (isShowingLogin) {
+                    if (!configLoaded) {
+                        // Optionally show a splash or loading indicator here
+                        com.dramalive.app.ui.components.LoadingScreen()
+                    } else if (isShowingLogin) {
                         LoginScreen(
                             onEmailLogin = { email, password ->
                                 handleEmailLogin(email, password)
@@ -87,6 +104,41 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var mInterstitialAd: com.google.android.gms.ads.interstitial.InterstitialAd? = null
+
+    private fun loadInterstitialAd() {
+        val adRequest = com.google.android.gms.ads.AdRequest.Builder().build()
+        com.google.android.gms.ads.interstitial.InterstitialAd.load(this, com.dramalive.app.Config.ADMOB_INTERSTITIAL_ID, adRequest, 
+            object : com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: com.google.android.gms.ads.interstitial.InterstitialAd) {
+                    mInterstitialAd = interstitialAd
+                    // Don't show immediately, show when opening a channel
+                }
+                override fun onAdFailedToLoad(adError: com.google.android.gms.ads.LoadAdError) {
+                    mInterstitialAd = null
+                }
+            })
+    }
+
+    fun showInterstitial(onAdClosed: () -> Unit) {
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.fullScreenContentCallback = object : com.google.android.gms.ads.FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    mInterstitialAd = null
+                    loadInterstitialAd() // Reload
+                    onAdClosed()
+                }
+                override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
+                    mInterstitialAd = null
+                    onAdClosed()
+                }
+            }
+            mInterstitialAd?.show(this)
+        } else {
+            onAdClosed()
+        }
+    }
+
     private fun handleEmailLogin(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
             loginError.value = "يرجى إدخال البريد الإلكتروني وكلمة المرور"
@@ -103,6 +155,12 @@ class MainActivity : ComponentActivity() {
             password = password,
             onSuccess = { user ->
                 showLogin.value = false
+                
+                // Track Login Event
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalytics.Param.METHOD, "email")
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle)
+
                 Toast.makeText(
                     this,
                     "مرحباً ${user?.email}",
@@ -135,13 +193,16 @@ class MainActivity : ComponentActivity() {
             email = email,
             password = password,
             onSuccess = { user ->
+                // Track Sign Up Event
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalytics.Param.METHOD, "email")
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle)
+
                 Toast.makeText(
                     this,
                     "تم إنشاء الحساب! يرجى تفعيل حسابك من خلال الرابط المرسل لبريدك الإلكتروني.",
                     Toast.LENGTH_LONG
                 ).show()
-                // Don't hide login yet, wait for them to verify and login?
-                // Actually, let them in but show verification reminder in DramaLiveScreen.
                 showLogin.value = false
             },
             onError = { error ->

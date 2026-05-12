@@ -16,7 +16,7 @@ fun AdBanner(modifier: Modifier = Modifier) {
             AdView(context).apply {
                 // TEST Ad Unit ID - Replace with your production ID later
                 setAdSize(AdSize.BANNER)
-                adUnitId = "ca-app-pub-7876868777201120/2387438883"
+                adUnitId = com.dramalive.app.Config.ADMOB_BANNER_ID
                 loadAd(AdRequest.Builder().build())
             }
         }

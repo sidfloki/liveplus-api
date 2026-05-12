@@ -150,7 +150,7 @@ fun SeriesDetailsScreen(
                         edgePadding = 16.dp,
                         divider = {}
                     ) {
-                        seasons.forEach { season ->
+                        for (season in seasons) {
                             Tab(
                                 selected = selectedSeason == season.seasonNumber,
                                 onClick = { selectedSeason = season.seasonNumber },

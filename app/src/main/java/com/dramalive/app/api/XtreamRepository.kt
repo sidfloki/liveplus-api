@@ -6,9 +6,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class XtreamRepository {
-    private val service = RetrofitClient.xtreamService
-    private val username = Config.XTREAM_USERNAME
-    private val password = Config.XTREAM_PASSWORD
+    private var service = RetrofitClient.xtreamService
+    private val username get() = Config.XTREAM_USERNAME
+    private val password get() = Config.XTREAM_PASSWORD
+
+    fun refreshService() {
+        if (Config.XTREAM_BASE_URL.isNotEmpty()) {
+            service = RetrofitClient.createWithBaseUrl(Config.XTREAM_BASE_URL)
+        }
+    }
 
     // Authentication
     suspend fun authenticate(): Result<XtreamAuthResponse> = withContext(Dispatchers.IO) {
@@ -16,6 +22,9 @@ class XtreamRepository {
             val response = service.authenticate(username, password)
             Result.success(response)
         } catch (e: Exception) {
+            // Trigger Failover in Background Service via Firebase
+            com.google.firebase.database.FirebaseDatabase.getInstance("https://streamvault-5f4a7-default-rtdb.europe-west1.firebasedatabase.app/")
+                .reference.child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -25,6 +34,8 @@ class XtreamRepository {
         try {
             Result.success(service.getLiveCategories(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -33,6 +44,8 @@ class XtreamRepository {
         try {
             Result.success(service.getLiveStreams(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -41,6 +54,8 @@ class XtreamRepository {
         try {
             Result.success(service.getLiveStreamsByCategory(username, password, categoryId = categoryId))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -50,6 +65,8 @@ class XtreamRepository {
         try {
             Result.success(service.getVodCategories(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -58,6 +75,8 @@ class XtreamRepository {
         try {
             Result.success(service.getVodStreams(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -66,6 +85,8 @@ class XtreamRepository {
         try {
             Result.success(service.getVodStreamsByCategory(username, password, categoryId = categoryId))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -75,6 +96,8 @@ class XtreamRepository {
         try {
             Result.success(service.getSeriesCategories(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -83,6 +106,8 @@ class XtreamRepository {
         try {
             Result.success(service.getSeries(username, password))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -91,6 +116,8 @@ class XtreamRepository {
         try {
             Result.success(service.getSeriesByCategory(username, password, categoryId = categoryId))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }
@@ -99,6 +126,8 @@ class XtreamRepository {
         try {
             Result.success(service.getSeriesInfo(username, password, seriesId = seriesId))
         } catch (e: Exception) {
+            com.google.firebase.database.FirebaseDatabase.getInstance().reference
+                .child("commands/trigger_failover").setValue(true)
             Result.failure(e)
         }
     }

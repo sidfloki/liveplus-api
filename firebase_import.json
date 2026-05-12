@@ -1,0 +1,31 @@
+{
+  "xtream_config": {
+    "host": "http://cineplay.vip:2086",
+    "username": "SmvVyh9Hw4",
+    "password": "yqQ9HHEpAm",
+    "updated_at": "2026-05-08T15:45:00Z"
+  },
+  "source_list": {
+    "server1": {
+      "host": "http://cineplay.vip:2086",
+      "username": "SmvVyh9Hw4",
+      "password": "yqQ9HHEpAm"
+    },
+    "server2": {
+      "host": "http://hydratv.pro:2095",
+      "username": "hp9559326",
+      "password": "966568763228"
+    }
+  },
+  "direct_channels": {
+    "ch1": {
+      "title": "DramaLive Official",
+      "url": "http://cineplay.vip:2086/live/SmvVyh9Hw4/yqQ9HHEpAm/1.ts",
+      "category": "Premium",
+      "image": "https://dramalive.app/logo.png"
+    }
+  },
+  "commands": {
+    "trigger_failover": false
+  }
+}

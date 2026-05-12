@@ -30,6 +30,8 @@ import com.dramalive.app.ui.theme.*
 import com.dramalive.app.util.ExternalPlayerLauncher
 import com.dramalive.app.util.FavoritesManager
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 enum class BottomNavItem(
@@ -38,10 +40,11 @@ enum class BottomNavItem(
     val selectedIcon: ImageVector
 ) {
     HOME("الرئيسية", Icons.Rounded.Home, Icons.Filled.Home),
+    CHANNELS("القنوات", Icons.Rounded.LiveTv, Icons.Filled.LiveTv),
     MOVIES("أفلام", Icons.Rounded.Movie, Icons.Filled.Movie),
     SERIES("مسلسلات", Icons.Rounded.Tv, Icons.Filled.Tv),
-    CHANNELS("قنوات", Icons.Rounded.LiveTv, Icons.Filled.LiveTv),
-    MY_LIST("قائمتي", Icons.Rounded.FavoriteBorder, Icons.Rounded.Favorite)
+    MATCHES("المباريات", Icons.Rounded.EmojiEvents, Icons.Filled.EmojiEvents),
+    MY_LIST("المفضلة", Icons.Rounded.FavoriteBorder, Icons.Rounded.Favorite)
 }
 
 @Composable
@@ -108,18 +111,23 @@ fun DramaLiveScreen(
 
     // Search state
     var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
 
     // Load data on launch
+    val directLinks by com.dramalive.app.util.DirectLinksStore.directLinks.collectAsState()
+
     LaunchedEffect(Unit) {
         isLoadingHome = true
+        isLoadingMovies = true
+        isLoadingSeries = true
+        isLoadingChannels = true
 
         // Load Movies
-        scope.launch {
+        val movieJob = scope.launch {
             try {
-                val vodResult = repository.getVodStreams()
-                vodResult.onSuccess { vodList ->
-                    // Limit initial load to 1000 items for performance
-                    val mediaItems = vodList.take(1000).map { repository.vodToMediaItem(it) }
+                val movieResult = repository.getVodStreams()
+                movieResult.onSuccess { vodList ->
+                    val mediaItems = vodList.map { repository.vodToMediaItem(it) }
                     movies = mediaItems
                     allMovies = mediaItems
                 }
@@ -127,18 +135,16 @@ fun DramaLiveScreen(
                 catResult.onSuccess { cats ->
                     movieCategories = filterCategories(cats)
                 }
-            } catch (e: Exception) { 
-                android.util.Log.e("DramaLive", "Error loading movies: ${e.message}")
-            }
+            } catch (_: Exception) { }
+            isLoadingMovies = false
         }
 
         // Load Series
-        scope.launch {
+        val seriesJob = scope.launch {
             try {
                 val seriesResult = repository.getSeries()
                 seriesResult.onSuccess { seriesList ->
-                    // Limit initial load to 1000 items for performance
-                    val mediaItems = seriesList.take(1000).map { repository.seriesToMediaItem(it) }
+                    val mediaItems = seriesList.map { repository.seriesToMediaItem(it) }
                     series = mediaItems
                     allSeries = mediaItems
                 }
@@ -146,9 +152,8 @@ fun DramaLiveScreen(
                 catResult.onSuccess { cats ->
                     seriesCategories = filterCategories(cats)
                 }
-            } catch (e: Exception) {
-                android.util.Log.e("DramaLive", "Error loading series: ${e.message}")
-            }
+            } catch (_: Exception) { }
+            isLoadingSeries = false
         }
 
         // Load Live Channels
@@ -165,10 +170,13 @@ fun DramaLiveScreen(
                     liveCategories = filterCategories(cats)
                 }
             } catch (_: Exception) { }
+            isLoadingChannels = false
         }
 
         // Wait for all to finish
         scope.launch {
+            movieJob.join()
+            seriesJob.join()
             liveJob.join()
             isLoadingHome = false
         }
@@ -177,7 +185,13 @@ fun DramaLiveScreen(
     // Launch external player when media is selected
     LaunchedEffect(selectedMedia) {
         selectedMedia?.let { media ->
-            if (media.videoUrl.isNotEmpty()) {
+                // Track Media Play
+                val bundle = android.os.Bundle()
+                bundle.putString(com.google.firebase.analytics.FirebaseAnalytics.Param.ITEM_ID, media.id.toString())
+                bundle.putString(com.google.firebase.analytics.FirebaseAnalytics.Param.ITEM_NAME, media.title)
+                bundle.putString(com.google.firebase.analytics.FirebaseAnalytics.Param.CONTENT_TYPE, media.category)
+                Firebase.analytics.logEvent(com.google.firebase.analytics.FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+
                 ExternalPlayerLauncher.launch(
                     context = context,
                     url = media.videoUrl,
@@ -197,32 +211,38 @@ fun DramaLiveScreen(
         when (currentTab) {
             BottomNavItem.HOME -> {
                 HomeScreen(
-                    movies = movies.filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    series = series.filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    liveChannels = liveChannels.filter { it.title.contains(searchQuery, ignoreCase = true) },
+                    liveChannels = (directLinks + liveChannels).filter { it.title.contains(searchQuery, ignoreCase = true) },
                     isLoading = isLoadingHome,
-                    onMediaClick = { media ->
-                        if (media.category == "Series") {
-                            selectedSeries = media
-                            isLoadingSeriesDetails = true
-                            scope.launch {
-                                val result = repository.getSeriesInfo(media.id.toString())
-                                result.onSuccess { info ->
-                                    seasons = info.seasons ?: emptyList()
-                                    episodes = info.episodes?.values?.flatten() ?: emptyList()
-                                }
-                                isLoadingSeriesDetails = false
+                    onCategoryClick = { category ->
+                        selectedCategory = category
+                        currentTab = BottomNavItem.CHANNELS
+                    },
+                    onSearch = { searchQuery = it }
+                )
+            }
+            BottomNavItem.CHANNELS -> {
+                ChannelsScreen(
+                    channels = (directLinks + liveChannels).filter { 
+                        it.title.contains(searchQuery, ignoreCase = true) &&
+                        (selectedCategory == null || it.category == selectedCategory)
+                    },
+                    categories = liveCategories,
+                    isLoading = isLoadingChannels,
+                    onChannelClick = { channel ->
+                        if (channel.videoUrl.isNotEmpty()) {
+                            // Show Ad before playing
+                            (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                                ExternalPlayerLauncher.launch(
+                                    context = context,
+                                    url = channel.videoUrl,
+                                    title = channel.title
+                                )
+                                FavoritesManager.addToHistory(context, channel)
+                                refreshFavorites()
                             }
-                        } else if (media.videoUrl.isNotEmpty()) {
-                            ExternalPlayerLauncher.launch(
-                                context = context,
-                                url = media.videoUrl,
-                                title = media.title
-                            )
                         }
                     },
-                    userName = userName,
-                    userPhoto = userPhoto,
+                    onOpenDrawer = { scope.launch { drawerState.open() } },
                     onSearch = { searchQuery = it }
                 )
             }
@@ -232,12 +252,10 @@ fun DramaLiveScreen(
                     categories = movieCategories,
                     isLoading = isLoadingMovies,
                     onMovieClick = { movie ->
-                        if (movie.videoUrl.isNotEmpty()) {
-                            ExternalPlayerLauncher.launch(
-                                context = context,
-                                url = movie.videoUrl,
-                                title = movie.title
-                            )
+                        (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                            ExternalPlayerLauncher.launch(context, movie.videoUrl, movie.title)
+                            FavoritesManager.addToHistory(context, movie)
+                            refreshFavorites()
                         }
                     },
                     onOpenDrawer = { scope.launch { drawerState.open() } },
@@ -249,14 +267,14 @@ fun DramaLiveScreen(
                     series = series.filter { it.title.contains(searchQuery, ignoreCase = true) },
                     categories = seriesCategories,
                     isLoading = isLoadingSeries,
-                    onSeriesClick = { seriesItem ->
-                        selectedSeries = seriesItem
+                    onSeriesClick = { item ->
                         isLoadingSeriesDetails = true
+                        selectedSeries = item
                         scope.launch {
-                            val result = repository.getSeriesInfo(seriesItem.id.toString())
-                            result.onSuccess { info ->
-                                seasons = info.seasons ?: emptyList()
-                                episodes = info.episodes?.values?.flatten() ?: emptyList()
+                            val infoResult = repository.getSeriesInfo(item.id.toString())
+                            infoResult.onSuccess { info ->
+                                seasons = info.seasons
+                                episodes = info.episodes.getOrDefault("1", emptyList())
                             }
                             isLoadingSeriesDetails = false
                         }
@@ -265,25 +283,8 @@ fun DramaLiveScreen(
                     onSearch = { searchQuery = it }
                 )
             }
-            BottomNavItem.CHANNELS -> {
-                ChannelsScreen(
-                    channels = liveChannels.filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    categories = liveCategories,
-                    isLoading = isLoadingChannels,
-                    onChannelClick = { channel ->
-                        if (channel.videoUrl.isNotEmpty()) {
-                            ExternalPlayerLauncher.launch(
-                                context = context,
-                                url = channel.videoUrl,
-                                title = channel.title
-                            )
-                            FavoritesManager.addToHistory(context, channel)
-                            refreshFavorites()
-                        }
-                    },
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onSearch = { searchQuery = it }
-                )
+            BottomNavItem.MATCHES -> {
+                MatchesScreen()
             }
             BottomNavItem.MY_LIST -> {
                 MyListScreen(
@@ -388,7 +389,12 @@ fun DramaLiveScreen(
                     val isSelected = currentTab == item
                     NavigationBarItem(
                         selected = isSelected,
-                        onClick = { currentTab = item },
+                        onClick = { 
+                            currentTab = item
+                            if (item == BottomNavItem.CHANNELS) {
+                                selectedCategory = null
+                            }
+                        },
                         icon = {
                             Icon(
                                 imageVector = if (isSelected) item.selectedIcon else item.icon,
@@ -405,11 +411,11 @@ fun DramaLiveScreen(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NetflixRed,
-                            selectedTextColor = NetflixRed,
+                            selectedIconColor = Color(0xFFFF9800),
+                            selectedTextColor = Color(0xFFFF9800),
                             unselectedIconColor = MutedGray,
                             unselectedTextColor = MutedGray,
-                            indicatorColor = NetflixRed.copy(alpha = 0.15f)
+                            indicatorColor = Color(0xFFFF9800).copy(alpha = 0.15f)
                         )
                     )
                 }

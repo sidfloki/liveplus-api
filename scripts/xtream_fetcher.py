@@ -21,6 +21,7 @@ MAX_VOD_PER_SERVER = 500
 MAX_SERIES_PER_SERVER = 300
 OUTPUT_FILE = "playlist.m3u"
 LOG_FILE = "scripts/fetch_log.txt"
+FIREBASE_DB_URL = "https://streamvault-5f4a7-default-rtdb.firebaseio.com/xtream_config.json"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("XtreamFetcher")
@@ -35,13 +36,21 @@ GENERATOR_URLS = [
     "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
 ]
 
-# Hardcoded known working servers (from Config.kt backup)
+# Hardcoded known working servers
 KNOWN_SERVERS = [
-    {
-        "host": "http://Sameh68g.geekflarecdn.com",
-        "username": "sameh68g",
-        "password": "15472848"
-    }
+    {"host": "http://hydratv.pro:2095", "username": "hp9559326", "password": "966568763228"},
+    {"host": "http://hydratv.pro:80", "username": "yaserabuamar2024", "password": "18032024yaser"},
+    {"host": "http://22ahmed6.geekflarecdn.com:80", "username": "22ahmed6", "password": "8632682"},
+    {"host": "http://22almallah.geekflarecdn.com", "username": "22almallah", "password": "h9369463"},
+    {"host": "http://2adam2012.geekflarecdn.com:80", "username": "2adam2012", "password": "amiradam2012"},
+    {"host": "http://48m07md.geekflarecdn.com:80", "username": "48m07md", "password": "m9430158"},
+    {"host": "http://5owlood99.geekflarecdn.com:80", "username": "5owlood99", "password": "3673053"},
+    {"host": "http://abdal4ah.geekflarecdn.com:80", "username": "abdal4ah", "password": "6036yv9dh"},
+    {"host": "http://abdelfatah76g.geekflarecdn.com:80", "username": "abdelfatah76g", "password": "51203816"},
+    {"host": "http://abdullla5672.geekflarecdn.com:80", "username": "abdullla5672", "password": "6654241"},
+    {"host": "http://ade4398ahmed.geekflarecdn.com:80", "username": "ade4398ahmed", "password": "39457843"},
+    {"host": "http://ahmad234g.geekflarecdn.com:80", "username": "ahmad234g", "password": "631567295"},
+    {"host": "http://Sameh68g.geekflarecdn.com", "username": "sameh68g", "password": "15472848"}
 ]
 
 
@@ -481,8 +490,14 @@ def main():
     # Save log
     save_log(valid_servers, len(all_content))
 
-    # Save best credentials for APK
+    # Save best credentials for APK (Sort by expiry date)
     if valid_servers:
+        # Try to sort by exp_date if available
+        try:
+            valid_servers.sort(key=lambda x: x.get("user_info", {}).get("exp_date", "0"), reverse=True)
+        except:
+            pass
+            
         best = valid_servers[0]
         creds = {
             "host": best["host"],
@@ -493,6 +508,16 @@ def main():
         with open("credentials.json", "w") as f:
             json.dump(creds, f, indent=4)
         logger.info("🔑 Best credentials saved to credentials.json")
+
+        # Sync to Firebase Realtime Database
+        try:
+            fb_resp = requests.put(FIREBASE_DB_URL, json=creds, timeout=TIMEOUT)
+            if fb_resp.status_code == 200:
+                logger.info("🔥 Successfully synced to Firebase Realtime Database")
+            else:
+                logger.warning(f"⚠️ Firebase sync failed (HTTP {fb_resp.status_code})")
+        except Exception as e:
+            logger.error(f"❌ Error syncing to Firebase: {e}")
 
 
 if __name__ == "__main__":

@@ -12,14 +12,19 @@ object Config {
     // Determine which URL to use (Global by default for worldwide access)
     val BASE_URL get() = if (GLOBAL_SERVER_URL.startsWith("https")) GLOBAL_SERVER_URL else "http://$LOCAL_SERVER_IP:$LOCAL_SERVER_PORT"
 
-    // Remote Configuration (Automatic Updates)
-    const val REMOTE_CONFIG_URL = "https://raw.githubusercontent.com/sidfloki/liveplus-api/main/credentials.json"
+    // Remote Configuration (Automatic Updates via Firebase)
+    const val REMOTE_CONFIG_URL = "https://streamvault-5f4a7-default-rtdb.europe-west1.firebasedatabase.app/xtream_config.json"
     const val REMOTE_M3U_URL = "https://raw.githubusercontent.com/sidfloki/liveplus-api/main/playlist.m3u"
 
-    // Xtream Codes API Configuration (Current/Default)
-    var XTREAM_BASE_URL = "http://Sameh68g.geekflarecdn.com/"
-    var XTREAM_USERNAME = "sameh68g"
-    var XTREAM_PASSWORD = "15472848"
+    // Xtream Codes API Configuration (User's Working Server)
+    var XTREAM_BASE_URL = "http://cineplay.vip:2086"
+    var XTREAM_USERNAME = "SmvVyh9Hw4"
+    var XTREAM_PASSWORD = "yqQ9HHEpAm"
+    
+    // AdMob Configuration
+    const val ADMOB_APP_ID = "ca-app-pub-7876868777201120~4600108640"
+    const val ADMOB_INTERSTITIAL_ID = "ca-app-pub-7876868777201120/7628065382"
+    const val ADMOB_BANNER_ID = "ca-app-pub-7876868777201120/7955368441"
     
     // API Endpoints
     const val API_GET_LIVE_STREAMS = "/player_api.php?username=%s&password=%s&action=get_live_streams"
@@ -36,26 +41,29 @@ object Config {
     
     // Stream URL format
     fun getStreamUrl(streamId: String, extension: String = "m3u8", isLocal: Boolean = false): String {
+        val cleanBase = XTREAM_BASE_URL.trimEnd('/')
         return if (isLocal) {
-            "$BASE_URL/stream/$streamId"
+            "${BASE_URL.trimEnd('/')}/stream/$streamId"
         } else {
-            "$XTREAM_BASE_URL/live/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
+            "$cleanBase/live/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
         }
     }
     
     fun getVodUrl(streamId: String, extension: String = "mp4", isLocal: Boolean = false): String {
+        val cleanBase = XTREAM_BASE_URL.trimEnd('/')
         return if (isLocal) {
-            "$BASE_URL/stream/$streamId"
+            "${BASE_URL.trimEnd('/')}/stream/$streamId"
         } else {
-            "$XTREAM_BASE_URL/movie/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
+            "$cleanBase/movie/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
         }
     }
     
     fun getSeriesUrl(streamId: String, extension: String = "mp4", isLocal: Boolean = false): String {
+        val cleanBase = XTREAM_BASE_URL.trimEnd('/')
         return if (isLocal) {
-            "$BASE_URL/stream/$streamId"
+            "${BASE_URL.trimEnd('/')}/stream/$streamId"
         } else {
-            "$XTREAM_BASE_URL/series/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
+            "$cleanBase/series/$XTREAM_USERNAME/$XTREAM_PASSWORD/$streamId.$extension"
         }
     }
 }

@@ -9,6 +9,7 @@ import android.widget.Toast
 object ExternalPlayerLauncher {
 
     private const val VLC_PACKAGE = "org.videolan.vlc"
+    private const val MX_PACKAGE = "com.mxtech.videoplayer.ad"
 
     /**
      * يقوم بتشغيل الفيديو في مشغل VLC حصراً
@@ -23,10 +24,8 @@ object ExternalPlayerLauncher {
         val uri = Uri.parse(url)
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "video/*")
-            setPackage(VLC_PACKAGE) // Force VLC
+            setPackage(VLC_PACKAGE) // Force VLC Player
             putExtra("title", title)
-            putExtra("from_start", false)
-            putExtra("position", 0L)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
@@ -42,13 +41,13 @@ object ExternalPlayerLauncher {
             try {
                 context.startActivity(intent)
             } catch (e: Exception) {
-                // Fallback to chooser if specific launch fails (rare but possible)
-                val chooser = Intent.createChooser(intent, "اختر مشغل (يفضل VLC)")
+                // Fallback to chooser if specific launch fails
+                val chooser = Intent.createChooser(intent, "اختر مشغل (يفضل VLC Player)")
                 chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(chooser)
             }
         } else {
-            // VLC is NOT installed
+            // VLC Player is NOT installed
             Toast.makeText(context, "يرجى تثبيت مشغل VLC للمتابعة", Toast.LENGTH_LONG).show()
             openPlayStore(context, VLC_PACKAGE)
         }
