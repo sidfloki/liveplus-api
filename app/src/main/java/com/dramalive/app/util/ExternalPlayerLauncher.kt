@@ -11,21 +11,20 @@ object ExternalPlayerLauncher {
     private const val VLC_PACKAGE = "org.videolan.vlc"
     private const val MX_PACKAGE = "com.mxtech.videoplayer.ad"
 
-    /**
-     * يقوم بتشغيل الفيديو في مشغل VLC حصراً
-     * إذا لم يكن مثبت، يوجه المستخدم لمتجر Play
-     */
-    fun launch(context: Context, url: String, title: String = "") {
+    fun launch(context: Context, url: String, title: String = "", subtitleUrl: String? = null) {
         if (url.isEmpty()) {
-            Toast.makeText(context, "رابط الفيديو غير صالح", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Invalid video URL", Toast.LENGTH_SHORT).show()
             return
         }
 
         val uri = Uri.parse(url)
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "video/*")
-            setPackage(VLC_PACKAGE) // Force VLC Player
+            setPackage(VLC_PACKAGE)
             putExtra("title", title)
+            if (!subtitleUrl.isNullOrEmpty()) {
+                putExtra("subtitles_location", subtitleUrl)
+            }
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
@@ -40,15 +39,18 @@ object ExternalPlayerLauncher {
         if (isVlcInstalled) {
             try {
                 context.startActivity(intent)
+                if (subtitleUrl.isNullOrEmpty()) {
+                    Toast.makeText(context, "Tip: You can download Arabic subtitles in VLC menu", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Subtitles loaded automatically", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
-                // Fallback to chooser if specific launch fails
-                val chooser = Intent.createChooser(intent, "اختر مشغل (يفضل VLC Player)")
+                val chooser = Intent.createChooser(intent, "Select Player (VLC Recommended)")
                 chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(chooser)
             }
         } else {
-            // VLC Player is NOT installed
-            Toast.makeText(context, "يرجى تثبيت مشغل VLC للمتابعة", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Please install VLC Player to continue", Toast.LENGTH_LONG).show()
             openPlayStore(context, VLC_PACKAGE)
         }
     }

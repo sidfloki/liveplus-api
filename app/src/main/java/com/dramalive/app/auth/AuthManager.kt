@@ -49,6 +49,23 @@ class AuthManager(private val context: Context) {
         getGoogleSignInClient().signOut()
     }
 
+    // Google Sign In
+    fun signInWithGoogle(
+        idToken: String,
+        onSuccess: (FirebaseUser?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onSuccess(auth.currentUser)
+                } else {
+                    onError(task.exception?.message ?: "Google authentication failed")
+                }
+            }
+    }
+
     // Email/Password Sign In
     fun signInWithEmail(
         email: String, 

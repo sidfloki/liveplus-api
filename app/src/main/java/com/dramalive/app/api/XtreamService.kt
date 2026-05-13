@@ -63,6 +63,15 @@ interface XtreamService {
         @Query("category_id") categoryId: String
     ): List<XtreamVodStream>
 
+    // VOD Info (with subtitles)
+    @GET("/player_api.php")
+    suspend fun getVodInfo(
+        @Query("username") username: String,
+        @Query("password") password: String,
+        @Query("action") action: String = "get_vod_info",
+        @Query("vod_id") vodId: Int
+    ): XtreamVodInfo
+
     // Series Categories
     @GET("/player_api.php")
     suspend fun getSeriesCategories(

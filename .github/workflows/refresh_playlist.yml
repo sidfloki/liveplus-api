@@ -1,0 +1,32 @@
+name: IPTV Playlist Refresher
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Every 6 hours
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          pip install requests
+          
+      - name: Run Xtream Fetcher
+        run: python scripts/xtream_fetcher.py
+        
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add playlist.m3u credentials.json
+          git commit -m "Auto-update playlist and credentials [skip ci]" || echo "No changes to commit"
+          git push

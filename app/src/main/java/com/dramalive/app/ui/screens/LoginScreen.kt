@@ -37,6 +37,7 @@ import com.dramalive.app.ui.theme.*
 fun LoginScreen(
     onEmailLogin: (String, String) -> Unit,
     onEmailSignUp: (String, String) -> Unit,
+    onGoogleLogin: () -> Unit,
     onSkip: () -> Unit,
     errorMessage: String? = null
 ) {
@@ -109,7 +110,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = if (isSignUp) "إنشاء حساب جديد" else "تسجيل الدخول",
+                text = if (isSignUp) "Create Account" else "Sign In",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = PureWhite
@@ -117,9 +118,9 @@ fun LoginScreen(
 
             Text(
                 text = if (isSignUp)
-                    "أدخل بريدك الإلكتروني الحقيقي لإنشاء حساب"
+                    "Enter your real email to create an account"
                 else
-                    "سجّل دخولك بالبريد الإلكتروني",
+                    "Sign in with your email",
                 fontSize = 13.sp,
                 color = SubtextGray,
                 textAlign = TextAlign.Center,
@@ -160,7 +161,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("البريد الإلكتروني", color = SubtextGray) },
+                label = { Text("Email", color = SubtextGray) },
                 leadingIcon = {
                     Icon(Icons.Rounded.Email, contentDescription = null, tint = SubtextGray)
                 },
@@ -176,7 +177,7 @@ fun LoginScreen(
                 isError = email.isNotEmpty() && !isEmailValid,
                 supportingText = {
                     if (email.isNotEmpty() && !isEmailValid) {
-                        Text("يرجى إدخال بريد إلكتروني صحيح", color = NetflixRed, fontSize = 12.sp)
+                        Text("Please enter a valid email", color = NetflixRed, fontSize = 12.sp)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -209,7 +210,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("كلمة المرور", color = SubtextGray) },
+                label = { Text("Password", color = SubtextGray) },
                 leadingIcon = {
                     Icon(Icons.Rounded.Lock, contentDescription = null, tint = SubtextGray)
                 },
@@ -225,7 +226,7 @@ fun LoginScreen(
                 isError = password.isNotEmpty() && !isPasswordValid,
                 supportingText = {
                     if (password.isNotEmpty() && !isPasswordValid) {
-                        Text("كلمة المرور يجب أن تكون 6 أحرف على الأقل", color = NetflixRed, fontSize = 12.sp)
+                        Text("Password must be at least 6 characters", color = NetflixRed, fontSize = 12.sp)
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None
@@ -265,7 +266,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        label = { Text("تأكيد كلمة المرور", color = SubtextGray) },
+                        label = { Text("Confirm Password", color = SubtextGray) },
                         leadingIcon = {
                             Icon(Icons.Rounded.LockReset, contentDescription = null, tint = SubtextGray)
                         },
@@ -282,7 +283,7 @@ fun LoginScreen(
                         isError = confirmPassword.isNotEmpty() && password != confirmPassword,
                         supportingText = {
                             if (confirmPassword.isNotEmpty() && password != confirmPassword) {
-                                Text("كلمتا المرور غير متطابقتين", color = NetflixRed, fontSize = 12.sp)
+                                Text("Passwords do not match", color = NetflixRed, fontSize = 12.sp)
                             }
                         },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None
@@ -343,10 +344,38 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = if (isSignUp) "إنشاء الحساب" else "دخول",
+                    text = if (isSignUp) "Create Account" else "Sign In",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = PureWhite
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // ─── Google Sign In Button ──────────────────────────────
+            Button(
+                onClick = onGoogleLogin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PureWhite
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AccountCircle,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "Sign in with Google",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black
                 )
             }
 
@@ -359,12 +388,12 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = if (isSignUp) "لديك حساب بالفعل؟ " else "لا تملك حساباً؟ ",
+                    text = if (isSignUp) "Already have an account? " else "Don't have an account? ",
                     color = SubtextGray,
                     fontSize = 14.sp
                 )
                 Text(
-                    text = if (isSignUp) "سجّل دخولك" else "أنشئ حساباً الآن",
+                    text = if (isSignUp) "Sign In" else "Create Now",
                     color = NetflixRed,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -392,7 +421,7 @@ fun LoginScreen(
                 )
             ) {
                 Text(
-                    text = "تخطي ▶  الدخول بدون حساب",
+                    text = "Skip ▶  Enter without account",
                     color = SubtextGray,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp

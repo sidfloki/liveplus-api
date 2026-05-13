@@ -64,7 +64,7 @@ fun ChannelsScreen(
                     Icon(Icons.Rounded.Menu, contentDescription = "Menu", tint = PureWhite)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("قنوات مباشرة", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
+                Text("TV", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                     Icon(
@@ -86,7 +86,7 @@ fun ChannelsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    placeholder = { Text("ابحث عن قنوات...", color = SubtextGray) },
+                    placeholder = { Text("Search channels...", color = SubtextGray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = NetflixRed,
@@ -121,7 +121,7 @@ fun ChannelsScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Rounded.SatelliteAlt, contentDescription = null, tint = MutedGray, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("لا توجد قنوات", color = MutedGray, fontSize = 16.sp)
+                    Text("No channels found", color = MutedGray, fontSize = 16.sp)
                 }
             }
         } else {

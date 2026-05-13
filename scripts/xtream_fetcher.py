@@ -327,7 +327,15 @@ def fetch_live_channels(server):
                         # Basic sports detection
                         name_lower = name.lower()
                         if any(x in name_lower for x in ["sport", "bein", "ssc", "kora", "رياضة"]):
-                            cat_name = "رياضة"
+                            cat_name = "Sports"
+                        elif any(x in name_lower for x in ["france", "fr:", "fr "]):
+                            cat_name = "French"
+                        elif any(x in name_lower for x in ["algerie", "dz:", "entv", "algeria"]):
+                            cat_name = "Algerian"
+                        elif any(x in name_lower for x in ["ar:", "arabic", "عربي"]):
+                            cat_name = "Arabic"
+                        elif any(x in name_lower for x in ["cinema", "movie", "box office"]):
+                            cat_name = "Movies TV"
                             
                         poster = item.get("stream_icon", "")
 

@@ -30,18 +30,14 @@ fun MatchesScreen() {
 
     LaunchedEffect(Unit) {
         isLoading = true
-        // Simulate fetching from a free API
-        // In a real app, you'd use Retrofit or similar
         try {
-            // For demonstration, we'll generate some matches
-            // In production, you would fetch from: https://api.football-data.org/v4/matches
             delay(1500)
             matches = listOf(
-                Match("ريال مدريد", "برشلونة", "21:00", "الدوري الإسباني", "قيد الانتظار"),
-                Match("مانشستر سيتي", "ليفربول", "18:30", "الدوري الإنجليزي", "مباشر"),
-                Match("بايرن ميونخ", "دورتموند", "19:45", "الدوري الألماني", "قيد الانتظار"),
-                Match("ميلان", "إنتر ميلان", "22:00", "الدوري الإيطالي", "انتهت"),
-                Match("باريس سان جيرمان", "مارسيليا", "20:00", "الدوري الفرنسي", "قيد الانتظار")
+                Match("Real Madrid", "Barcelona", "21:00", "La Liga", "Upcoming"),
+                Match("Man City", "Liverpool", "18:30", "Premier League", "LIVE"),
+                Match("Bayern Munich", "Dortmund", "19:45", "Bundesliga", "Upcoming"),
+                Match("AC Milan", "Inter Milan", "22:00", "Serie A", "Finished"),
+                Match("PSG", "Marseille", "20:00", "Ligue 1", "Upcoming")
             )
         } catch (e: Exception) {
             // Handle error
@@ -62,7 +58,7 @@ fun MatchesScreen() {
                 .padding(top = 48.dp, bottom = 16.dp, start = 20.dp, end = 20.dp)
         ) {
             Text(
-                text = "جدول المباريات",
+                text = "MATCHES",
                 color = PureWhite,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black
@@ -119,7 +115,7 @@ fun MatchCard(match: Match) {
                 }
                 
                 Surface(
-                    color = if (match.status == "مباشر") Color(0xFFE50914).copy(alpha = alpha) else Color.DarkGray.copy(alpha = 0.5f),
+                    color = if (match.status == "LIVE") Color(0xFFE50914).copy(alpha = alpha) else Color.DarkGray.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
@@ -158,7 +154,7 @@ fun MatchCard(match: Match) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 16.dp)) {
                     Text(
                         text = match.time, 
-                        color = if (match.status == "مباشر") Color(0xFFFF9800) else PureWhite, 
+                        color = if (match.status == "LIVE") Color(0xFFFF9800) else PureWhite, 
                         fontWeight = FontWeight.Black, 
                         fontSize = 22.sp
                     )
@@ -187,14 +183,14 @@ fun MatchCard(match: Match) {
                 onClick = { /* Navigate to channel if live */ },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (match.status == "مباشر") Color(0xFFFF9800) else Color.Transparent
+                    containerColor = if (match.status == "LIVE") Color(0xFFFF9800) else Color.Transparent
                 ),
                 shape = RoundedCornerShape(12.dp),
-                border = if (match.status == "مباشر") null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF333333))
+                border = if (match.status == "LIVE") null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF333333))
             ) {
                 Text(
-                    text = if (match.status == "مباشر") "مشاهدة البث المباشر" else "تذكير بالمباراة", 
-                    color = if (match.status == "مباشر") Color.Black else PureWhite, 
+                    text = if (match.status == "LIVE") "Watch Live" else "Remind Me", 
+                    color = if (match.status == "LIVE") Color.Black else PureWhite, 
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 14.sp
                 )

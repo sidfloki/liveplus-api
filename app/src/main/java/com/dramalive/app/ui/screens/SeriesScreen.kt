@@ -64,7 +64,7 @@ fun SeriesScreen(
                     Icon(Icons.Rounded.Menu, contentDescription = "Menu", tint = PureWhite)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("مسلسلات", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
+                Text("SERIE", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                     Icon(
@@ -86,7 +86,7 @@ fun SeriesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    placeholder = { Text("ابحث عن مسلسلات...", color = SubtextGray) },
+                    placeholder = { Text("Search series...", color = SubtextGray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = NetflixRed,
@@ -121,7 +121,7 @@ fun SeriesScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Rounded.LiveTv, contentDescription = null, tint = MutedGray, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("لا توجد مسلسلات", color = MutedGray, fontSize = 16.sp)
+                    Text("No series found", color = MutedGray, fontSize = 16.sp)
                 }
             }
         } else {
@@ -183,7 +183,7 @@ fun SeriesGridCard(series: MediaItem, onClick: () -> Unit) {
                     .align(Alignment.TopEnd)
             ) {
                 Text(
-                    "مسلسل",
+                    "SERIE",
                     color = PureWhite,
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold,

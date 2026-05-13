@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LivePlus Web Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #e50914;
@@ -15,7 +15,7 @@
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -62,8 +62,8 @@
         .section-title {
             font-size: 1.5rem;
             margin: 2rem 0 1rem;
-            border-right: 4px solid var(--primary);
-            padding-right: 10px;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
         }
 
         .grid {
@@ -114,7 +114,7 @@
         .badge {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             background: var(--primary);
             padding: 2px 8px;
             border-radius: 4px;
@@ -162,10 +162,10 @@
 
 <div class="container">
     <div class="filter-tabs" id="category-tabs">
-        <div class="tab active" onclick="filterCategory('all')">الكل</div>
+        <div class="tab active" onclick="filterCategory('all')">All</div>
     </div>
 
-    <div id="loading">جاري تحميل قائمة التشغيل...</div>
+    <div id="loading">Loading playlist...</div>
     <div class="grid" id="main-grid"></div>
 </div>
 
@@ -180,7 +180,7 @@
             parseM3U(text);
         } catch (error) {
             console.error('Error loading playlist:', error);
-            document.getElementById('loading').innerHTML = 'تعذر تحميل القائمة. تأكد من وجود ملف playlist.m3u';
+            document.getElementById('loading').innerHTML = 'Failed to load playlist. Make sure playlist.m3u exists.';
         }
     }
 
@@ -199,7 +199,7 @@
                 currentItem = {
                     name: name,
                     logo: logoMatch ? logoMatch[1] : '',
-                    category: groupMatch ? groupMatch[1] : 'عام',
+                    category: groupMatch ? groupMatch[1] : 'General',
                     url: ''
                 };
                 if (currentItem.category) categories.add(currentItem.category);
@@ -231,8 +231,8 @@
         // Render Stats
         const statsContainer = document.getElementById('stats-container');
         statsContainer.innerHTML = `
-            <div class="stat-item">القنوات: ${playlistItems.length}</div>
-            <div class="stat-item">الفئات: ${categories.size}</div>
+            <div class="stat-item">Channels: ${playlistItems.length}</div>
+            <div class="stat-item">Categories: ${categories.size}</div>
         `;
 
         displayItems(playlistItems);
@@ -250,7 +250,7 @@
                 <div class="badge">${item.category}</div>
                 <div class="card-info">
                     <div class="card-title">${item.name}</div>
-                    <div class="card-meta">اضغط للتشغيل</div>
+                    <div class="card-meta">Click to play</div>
                 </div>
             `;
             card.onclick = () => window.open(item.url, '_blank');

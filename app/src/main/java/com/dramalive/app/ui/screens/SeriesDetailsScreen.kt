@@ -126,7 +126,7 @@ fun SeriesDetailsScreen(
                         ) {
                             Icon(if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (isFavorite) "في قائمتي" else "إضافة لقائمتي")
+                            Text(if (isFavorite) "In My List" else "Add to My List")
                         }
                     }
 
@@ -156,7 +156,7 @@ fun SeriesDetailsScreen(
                                 onClick = { selectedSeason = season.seasonNumber },
                                 text = {
                                     Text(
-                                        text = "الموسم ${season.seasonNumber}",
+                                        text = "Season ${season.seasonNumber}",
                                         color = if (selectedSeason == season.seasonNumber) PureWhite else SubtextGray,
                                         fontWeight = if (selectedSeason == season.seasonNumber) FontWeight.Bold else FontWeight.Normal
                                     )
@@ -180,9 +180,23 @@ fun SeriesDetailsScreen(
                         episode = episode, 
                         onClick = { onEpisodeClick(episode) },
                         onDownload = {
-                            val episodeUrl = com.dramalive.app.Config.getSeriesUrl(episode.id, episode.containerExtension)
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(episodeUrl))
-                            context.startActivity(intent)
+                            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                            if (user == null) {
+                                android.widget.Toast.makeText(context, "Please login to download", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                                    val episodeUrl = com.dramalive.app.Config.getSeriesUrl(episode.id, episode.containerExtension)
+                                    val mediaItem = com.dramalive.app.models.MediaItem(
+                                        id = episode.id.toIntOrNull() ?: 0,
+                                        title = "${series.title} - S${episode.season}E${episode.episodeNum}",
+                                        description = episode.title,
+                                        videoUrl = episodeUrl,
+                                        imageUrl = episode.info?.movieImage ?: series.imageUrl,
+                                        category = "Episode"
+                                    )
+                                    com.dramalive.app.util.MediaDownloadManager.downloadMedia(context, mediaItem)
+                                }
+                            }
                         }
                     )
                 }

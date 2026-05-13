@@ -39,25 +39,25 @@ enum class BottomNavItem(
     val icon: ImageVector,
     val selectedIcon: ImageVector
 ) {
-    HOME("الرئيسية", Icons.Rounded.Home, Icons.Filled.Home),
-    CHANNELS("القنوات", Icons.Rounded.LiveTv, Icons.Filled.LiveTv),
-    MOVIES("أفلام", Icons.Rounded.Movie, Icons.Filled.Movie),
-    SERIES("مسلسلات", Icons.Rounded.Tv, Icons.Filled.Tv),
-    MATCHES("المباريات", Icons.Rounded.EmojiEvents, Icons.Filled.EmojiEvents),
-    MY_LIST("المفضلة", Icons.Rounded.FavoriteBorder, Icons.Rounded.Favorite)
+    MOVIES("FILM", Icons.Rounded.Movie, Icons.Filled.Movie),
+    SERIES("SERIE", Icons.Rounded.Tv, Icons.Filled.Tv),
+    CHANNELS("TV", Icons.Rounded.LiveTv, Icons.Filled.LiveTv),
+    MATCHES("EVENT", Icons.Rounded.EmojiEvents, Icons.Filled.EmojiEvents),
+    ACCOUNT("ACCOUNT", Icons.Rounded.Person, Icons.Filled.Person)
 }
 
 @Composable
 fun DramaLiveScreen(
-    userName: String? = null,
-    userPhoto: String? = null
+    userName: String,
+    userPhoto: String?,
+    onLoginRequest: () -> Unit
 ) {
     val repository = remember { XtreamRepository() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     // Navigation state
-    var currentTab by remember { mutableStateOf(BottomNavItem.HOME) }
+    var currentTab by remember { mutableStateOf(BottomNavItem.MOVIES) }
     var selectedMedia by remember { mutableStateOf<MediaItem?>(null) }
     var selectedSeries by remember { mutableStateOf<MediaItem?>(null) }
 
@@ -99,7 +99,7 @@ fun DramaLiveScreen(
     // Unwanted category keywords
     val unwantedKeywords = listOf(
         "customers reviews", "telegeram", "telegram", "new channel", 
-        "جدول المباريات", "تواصل معنا", "اعلانات سيرفر", "تواصل", "reviews"
+        "matches schedule", "contact us", "server ads", "contact", "reviews"
     )
 
     fun filterCategories(cats: List<XtreamCategory>): List<XtreamCategory> {
@@ -163,8 +163,18 @@ fun DramaLiveScreen(
                 liveResult.onSuccess { liveList ->
                     val mediaItems = liveList.map { repository.liveStreamToMediaItem(it) }
                     liveChannels = mediaItems
-                    allChannels = mediaItems
                 }
+                
+                // Fetch extra channels from GitHub M3U
+                try {
+                    val extraChannels = com.dramalive.app.util.M3UParser.fetchFromUrl(com.dramalive.app.Config.REMOTE_M3U_URL)
+                    liveChannels = liveChannels + extraChannels
+                } catch (e: Exception) {
+                    android.util.Log.e("DramaLive", "Failed to load M3U: ${e.message}")
+                }
+                
+                allChannels = liveChannels
+                
                 val catResult = repository.getLiveCategories()
                 catResult.onSuccess { cats ->
                     liveCategories = filterCategories(cats)
@@ -208,14 +218,50 @@ fun DramaLiveScreen(
     Box(modifier = Modifier.fillMaxSize().background(DeepBlack)) {
         // Content
         when (currentTab) {
-            BottomNavItem.HOME -> {
-                HomeScreen(
-                    liveChannels = (directLinks + liveChannels).filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    isLoading = isLoadingHome,
-                    onCategoryClick = { category ->
-                        selectedCategory = category
-                        currentTab = BottomNavItem.CHANNELS
+            BottomNavItem.MOVIES -> {
+                MoviesScreen(
+                    movies = movies.filter { it.title.contains(searchQuery, ignoreCase = true) },
+                    categories = movieCategories,
+                    isLoading = isLoadingMovies,
+                    onMovieClick = { movie ->
+                        scope.launch {
+                            val infoResult = repository.getVodInfo(movie.id.toString().toIntOrNull() ?: 0)
+                            var subtitleUrl: String? = null
+                            infoResult.onSuccess { info ->
+                                subtitleUrl = info.subtitles?.find { 
+                                    it.language?.lowercase()?.contains("ara") == true || 
+                                    it.language?.lowercase()?.contains("arabic") == true 
+                                }?.url ?: info.subtitles?.firstOrNull()?.url
+                            }
+                            (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                                ExternalPlayerLauncher.launch(context, movie.videoUrl, movie.title, subtitleUrl)
+                                FavoritesManager.addToHistory(context, movie)
+                                refreshFavorites()
+                            }
+                        }
                     },
+                    onOpenDrawer = { scope.launch { drawerState.open() } },
+                    onSearch = { searchQuery = it }
+                )
+            }
+            BottomNavItem.SERIES -> {
+                SeriesScreen(
+                    series = series.filter { it.title.contains(searchQuery, ignoreCase = true) },
+                    categories = seriesCategories,
+                    isLoading = isLoadingSeries,
+                    onSeriesClick = { item ->
+                        isLoadingSeriesDetails = true
+                        selectedSeries = item
+                        scope.launch {
+                            val infoResult = repository.getSeriesInfo(item.id.toString())
+                            infoResult.onSuccess { info ->
+                                seasons = info.seasons ?: emptyList()
+                                episodes = info.episodes?.getOrDefault("1", emptyList()) ?: emptyList()
+                            }
+                            isLoadingSeriesDetails = false
+                        }
+                    },
+                    onOpenDrawer = { scope.launch { drawerState.open() } },
                     onSearch = { searchQuery = it }
                 )
             }
@@ -245,59 +291,18 @@ fun DramaLiveScreen(
                     onSearch = { searchQuery = it }
                 )
             }
-            BottomNavItem.MOVIES -> {
-                MoviesScreen(
-                    movies = movies.filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    categories = movieCategories,
-                    isLoading = isLoadingMovies,
-                    onMovieClick = { movie ->
-                        (context as? com.dramalive.app.MainActivity)?.showInterstitial {
-                            ExternalPlayerLauncher.launch(context, movie.videoUrl, movie.title)
-                            FavoritesManager.addToHistory(context, movie)
-                            refreshFavorites()
-                        }
-                    },
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onSearch = { searchQuery = it }
-                )
-            }
-            BottomNavItem.SERIES -> {
-                SeriesScreen(
-                    series = series.filter { it.title.contains(searchQuery, ignoreCase = true) },
-                    categories = seriesCategories,
-                    isLoading = isLoadingSeries,
-                    onSeriesClick = { item ->
-                        isLoadingSeriesDetails = true
-                        selectedSeries = item
-                        scope.launch {
-                            val infoResult = repository.getSeriesInfo(item.id.toString())
-                            infoResult.onSuccess { info ->
-                                seasons = info.seasons ?: emptyList()
-                                episodes = info.episodes?.getOrDefault("1", emptyList()) ?: emptyList()
-                            }
-                            isLoadingSeriesDetails = false
-                        }
-                    },
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onSearch = { searchQuery = it }
-                )
-            }
             BottomNavItem.MATCHES -> {
                 MatchesScreen()
             }
-            BottomNavItem.MY_LIST -> {
-                MyListScreen(
-                    favorites = favoriteItems,
-                    history = watchHistory,
-                    onMediaClick = { media ->
-                        ExternalPlayerLauncher.launch(context, media.videoUrl, media.title)
-                        FavoritesManager.addToHistory(context, media)
-                        refreshFavorites()
+            BottomNavItem.ACCOUNT -> {
+                ProfileScreen(
+                    userName = userName ?: "User",
+                    userPhoto = userPhoto,
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut()
+                        (context as? com.dramalive.app.MainActivity)?.recreate()
                     },
-                    onRemoveFavorite = { item ->
-                        FavoritesManager.toggleFavorite(context, item)
-                        refreshFavorites()
-                    }
+                    onLoginRequest = onLoginRequest
                 )
             }
         }
@@ -317,13 +322,21 @@ fun DramaLiveScreen(
                 },
                 onEpisodeClick = { episode ->
                     val episodeUrl = com.dramalive.app.Config.getSeriesUrl(episode.id, episode.containerExtension)
-                    ExternalPlayerLauncher.launch(
-                        context = context,
-                        url = episodeUrl,
-                        title = episode.title
-                    )
-                    FavoritesManager.addToHistory(context, selectedSeries!!)
-                    refreshFavorites()
+                    val subtitleUrl = episode.info?.subtitles?.find { 
+                        it.language?.lowercase()?.contains("ara") == true || 
+                        it.language?.lowercase()?.contains("arabic") == true 
+                    }?.url ?: episode.info?.subtitles?.firstOrNull()?.url
+                    
+                    (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                        ExternalPlayerLauncher.launch(
+                            context = context,
+                            url = episodeUrl,
+                            title = episode.title,
+                            subtitleUrl = subtitleUrl
+                        )
+                        FavoritesManager.addToHistory(context, selectedSeries!!)
+                        refreshFavorites()
+                    }
                 },
                 onBack = { selectedSeries = null }
             )
@@ -346,16 +359,16 @@ fun DramaLiveScreen(
                     Icon(Icons.Rounded.Info, contentDescription = null, tint = PureWhite)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "يرجى تفعيل بريدك الإلكتروني للحصول على كافة الميزات.",
+                        "Please verify your email to access all features.",
                         color = PureWhite,
                         fontSize = 12.sp,
                         modifier = Modifier.weight(1f)
                     )
                     TextButton(onClick = { 
                         user.sendEmailVerification()
-                        Toast.makeText(context, "تم إعادة إرسال رابط التفعيل", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Verification link resent", Toast.LENGTH_SHORT).show()
                     }) {
-                        Text("إعادة إرسال", color = PureWhite, fontWeight = FontWeight.Bold)
+                        Text("Resend", color = PureWhite, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -422,6 +435,60 @@ fun DramaLiveScreen(
             
             // Add Ad Banner at the very bottom
             com.dramalive.app.ui.components.AdBanner()
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen(
+    userName: String,
+    userPhoto: String?,
+    onLogout: () -> Unit,
+    onLoginRequest: () -> Unit
+) {
+    val isGuest = userName == "User" || userName.isEmpty()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.AccountCircle,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp),
+            tint = NetflixRed
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = if (isGuest) "You are browsing as Guest" else "Welcome, $userName",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = PureWhite
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        if (isGuest) {
+            Button(
+                onClick = onLoginRequest,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Login / Sign Up", color = PureWhite)
+            }
+        } else {
+            Button(
+                onClick = onLogout,
+                colors = ButtonDefaults.buttonColors(containerColor = NetflixRed),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Logout", color = PureWhite)
+            }
         }
     }
 }

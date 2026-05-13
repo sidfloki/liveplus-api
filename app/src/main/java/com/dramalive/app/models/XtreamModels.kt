@@ -85,8 +85,28 @@ data class XtreamEpisode(
     @SerializedName("season") val season: Int
 )
 
+data class XtreamVodInfo(
+    @SerializedName("info") val info: XtreamMovieData?,
+    @SerializedName("subtitles") val subtitles: List<XtreamSubtitle>?
+)
+
+data class XtreamMovieData(
+    @SerializedName("movie_image") val movieImage: String?,
+    @SerializedName("plot") val plot: String?,
+    @SerializedName("rating") val rating: String?,
+    @SerializedName("releasedate") val releaseDate: String?
+)
+
+data class XtreamSubtitle(
+    @SerializedName("id") val id: String?,
+    @SerializedName("language") val language: String?,
+    @SerializedName("extension") val extension: String?,
+    @SerializedName("url") val url: String?
+)
+
 data class XtreamEpisodeInfo(
     @SerializedName("movie_image") val movieImage: String?,
     @SerializedName("duration") val duration: String?,
-    @SerializedName("plot") val plot: String?
+    @SerializedName("plot") val plot: String?,
+    @SerializedName("subtitles") val subtitles: List<XtreamSubtitle>?
 )

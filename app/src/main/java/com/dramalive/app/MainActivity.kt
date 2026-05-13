@@ -78,6 +78,10 @@ class MainActivity : ComponentActivity() {
                             onEmailSignUp = { email, password ->
                                 handleEmailSignUp(email, password)
                             },
+                            onGoogleLogin = {
+                                val signInIntent = authManager.getGoogleSignInClient().signInIntent
+                                googleSignInLauncher.launch(signInIntent)
+                            },
                             onSkip = {
                                 showLogin.value = false
                             },
@@ -85,24 +89,49 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         val user = FirebaseAuth.getInstance().currentUser
-                        // Check if email is verified for "Real Email" requirement
-                        if (user != null && !user.isEmailVerified) {
-                            // Still show DramaLiveScreen but maybe with a warning?
-                            // For now, let's just show a Toast and allow them in, 
-                            // or I can show a dedicated "Please verify" screen.
-                            // The user said "real email and not fake", so enforcing it is better.
-                        }
                         
                         DramaLiveScreen(
                             userName = user?.displayName
                                 ?: user?.email?.split("@")?.firstOrNull()
-                                ?: "مستخدم",
-                            userPhoto = user?.photoUrl?.toString()
+                                ?: "User",
+                            userPhoto = user?.photoUrl?.toString(),
+                            onLoginRequest = {
+                                showLogin.value = true
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    private val googleSignInLauncher = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult().let { contract ->
+        registerForActivityResult(contract) { result ->
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+                val task = com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(com.google.android.gms.common.api.ApiException::class.java)
+                    account.idToken?.let { idToken ->
+                        handleGoogleLogin(idToken)
+                    }
+                } catch (e: Exception) {
+                    loginError.value = "Google login failed: ${e.message}"
+                }
+            }
+        }
+    }
+
+    private fun handleGoogleLogin(idToken: String) {
+        authManager.signInWithGoogle(
+            idToken = idToken,
+            onSuccess = { user ->
+                showLogin.value = false
+                Toast.makeText(this, "Welcome ${user?.displayName}", Toast.LENGTH_SHORT).show()
+            },
+            onError = { error ->
+                loginError.value = error
+            }
+        )
     }
 
     private var mInterstitialAd: com.google.android.gms.ads.interstitial.InterstitialAd? = null
@@ -113,7 +142,6 @@ class MainActivity : ComponentActivity() {
             object : com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: com.google.android.gms.ads.interstitial.InterstitialAd) {
                     mInterstitialAd = interstitialAd
-                    // Don't show immediately, show when opening a channel
                 }
                 override fun onAdFailedToLoad(adError: com.google.android.gms.ads.LoadAdError) {
                     mInterstitialAd = null
@@ -126,7 +154,7 @@ class MainActivity : ComponentActivity() {
             mInterstitialAd?.fullScreenContentCallback = object : com.google.android.gms.ads.FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     mInterstitialAd = null
-                    loadInterstitialAd() // Reload
+                    loadInterstitialAd()
                     onAdClosed()
                 }
                 override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
@@ -142,11 +170,7 @@ class MainActivity : ComponentActivity() {
 
     private fun handleEmailLogin(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            loginError.value = "يرجى إدخال البريد الإلكتروني وكلمة المرور"
-            return
-        }
-        if (!email.contains("@") || !email.contains(".")) {
-            loginError.value = "يرجى إدخال بريد إلكتروني صحيح"
+            loginError.value = "Please enter email and password"
             return
         }
         loginError.value = null
@@ -155,37 +179,29 @@ class MainActivity : ComponentActivity() {
             email = email,
             password = password,
             onSuccess = { user ->
-                showLogin.value = false
-                
-                // Track Login Event
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalytics.Param.METHOD, "email")
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle)
 
-                Toast.makeText(
-                    this,
-                    "مرحباً ${user?.email}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                showLogin.value = false
             },
             onError = { error ->
-                // ترجمة رسائل الخطأ الإنجليزية إلى العربية
-                loginError.value = translateFirebaseError(error)
+                loginError.value = error
             }
         )
     }
 
     private fun handleEmailSignUp(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            loginError.value = "يرجى إدخال البريد الإلكتروني وكلمة المرور"
+            loginError.value = "Please enter email and password"
             return
         }
         if (!email.contains("@") || !email.contains(".")) {
-            loginError.value = "يرجى إدخال بريد إلكتروني صحيح"
+            loginError.value = "Please enter a valid email"
             return
         }
         if (password.length < 6) {
-            loginError.value = "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+            loginError.value = "Password must be at least 6 characters"
             return
         }
         loginError.value = null
@@ -194,52 +210,24 @@ class MainActivity : ComponentActivity() {
             email = email,
             password = password,
             onSuccess = { user ->
-                // Track Sign Up Event
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalytics.Param.METHOD, "email")
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle)
 
                 Toast.makeText(
                     this,
-                    "تم إنشاء الحساب! يرجى تفعيل حسابك من خلال الرابط المرسل لبريدك الإلكتروني.",
+                    "Account created! Please verify your email.",
                     Toast.LENGTH_LONG
                 ).show()
                 showLogin.value = false
             },
             onError = { error ->
-                loginError.value = translateFirebaseError(error)
+                loginError.value = error
             }
         )
     }
 
-    /**
-     * ترجمة رسائل خطأ Firebase من الإنجليزية إلى العربية
-     */
     private fun translateFirebaseError(error: String): String {
-        return when {
-            error.contains("no user record", ignoreCase = true) ||
-            error.contains("user-not-found", ignoreCase = true) ->
-                "لا يوجد حساب بهذا البريد الإلكتروني. يرجى إنشاء حساب جديد."
-
-            error.contains("password is invalid", ignoreCase = true) ||
-            error.contains("wrong-password", ignoreCase = true) ->
-                "كلمة المرور غير صحيحة. يرجى المحاولة مجدداً."
-
-            error.contains("email address is already in use", ignoreCase = true) ||
-            error.contains("email-already-in-use", ignoreCase = true) ->
-                "هذا البريد الإلكتروني مسجّل مسبقاً. يرجى تسجيل الدخول."
-
-            error.contains("badly formatted", ignoreCase = true) ||
-            error.contains("invalid-email", ignoreCase = true) ->
-                "البريد الإلكتروني غير صحيح."
-
-            error.contains("network", ignoreCase = true) ->
-                "فشل الاتصال بالإنترنت. يرجى التحقق من الشبكة."
-
-            error.contains("too-many-requests", ignoreCase = true) ->
-                "تم تجاوز عدد المحاولات. يرجى الانتظار قليلاً."
-
-            else -> "خطأ في تسجيل الدخول: $error"
-        }
+        return error // Simplified as user wants English
     }
 }

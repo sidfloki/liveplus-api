@@ -91,6 +91,14 @@ class XtreamRepository {
         }
     }
 
+    suspend fun getVodInfo(vodId: Int): Result<XtreamVodInfo> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(service.getVodInfo(username, password, vodId = vodId))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // Series
     suspend fun getSeriesCategories(): Result<List<XtreamCategory>> = withContext(Dispatchers.IO) {
         try {

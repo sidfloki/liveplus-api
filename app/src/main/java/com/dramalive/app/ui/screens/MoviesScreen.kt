@@ -64,7 +64,7 @@ fun MoviesScreen(
                     Icon(Icons.Rounded.Menu, contentDescription = "Menu", tint = PureWhite)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("أفلام", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
+                Text("FILM", color = PureWhite, fontSize = 22.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                     Icon(
@@ -86,7 +86,7 @@ fun MoviesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    placeholder = { Text("ابحث عن أفلام...", color = SubtextGray) },
+                    placeholder = { Text("Search movies...", color = SubtextGray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = NetflixRed,
@@ -121,7 +121,7 @@ fun MoviesScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Rounded.MovieFilter, contentDescription = null, tint = MutedGray, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("لا توجد أفلام", color = MutedGray, fontSize = 16.sp)
+                    Text("No movies found", color = MutedGray, fontSize = 16.sp)
                 }
             }
         } else {
@@ -133,7 +133,21 @@ fun MoviesScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(movies) { movie ->
-                    MovieGridCard(movie = movie, onClick = { onMovieClick(movie) })
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    MovieGridCard(
+                        movie = movie,
+                        onClick = { onMovieClick(movie) },
+                        onDownloadClick = {
+                            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                            if (user == null) {
+                                android.widget.Toast.makeText(context, "Please login to download", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                (context as? com.dramalive.app.MainActivity)?.showInterstitial {
+                                    com.dramalive.app.util.MediaDownloadManager.downloadMedia(context, movie)
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -141,7 +155,7 @@ fun MoviesScreen(
 }
 
 @Composable
-fun MovieGridCard(movie: MediaItem, onClick: () -> Unit) {
+fun MovieGridCard(movie: MediaItem, onClick: () -> Unit, onDownloadClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,6 +198,18 @@ fun MovieGridCard(movie: MediaItem, onClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = PureWhite, modifier = Modifier.size(20.dp))
+            }
+            
+            // Download icon
+            IconButton(
+                onClick = { onDownloadClick() },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(4.dp)
+                    .size(28.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+            ) {
+                Icon(Icons.Rounded.Download, contentDescription = "Download", tint = PureWhite, modifier = Modifier.size(16.dp))
             }
 
             // Rating
