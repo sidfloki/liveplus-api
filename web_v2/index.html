@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIVEPLUS | عالم الأفلام والمسلسلات</title>
+    <title>LIVEPLUS | عالم الأفلام والمسلسلات والأنمي</title>
+    <meta name="description" content="تطبيق لايف بلس لمشاهدة الأفلام والمسلسلات والقنوات المباشرة بجودة عالية. حمل الآن أفضل تطبيق ترفيهي للأندرويد.">
+    <meta name="keywords" content="LivePlus, لايف بلس, تحميل تطبيق لايف بلس, مشاهدة أفلام, مسلسلات عربية, بث مباشر">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="لايف بلس - عالمك الترفيهي المتكامل">
+    <meta property="og:description" content="شاهد أفضل الأفلام والمسلسلات والقنوات المباشرة بجودة 4K.">
+    <meta property="og:image" content="images/banner.png">
+
     <meta name="google-site-verification" content="bwAl13J6lcd3TCfD1j3LInmM4vK8F7Pg-_RPDBGYwb4" />
     <meta name="google-site-verification" content="lGr0BqFy4a_QMKBfd49JFn-21_MGSjEbLWFf7d1bUGw" />
     <!-- Google AdSense -->
@@ -49,11 +58,20 @@
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 2rem;
             font-weight: 900;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+
+        .logo img {
+            height: 45px;
+            width: 45px;
+            object-fit: contain;
         }
 
         nav ul {
@@ -76,7 +94,7 @@
         /* Hero Section */
         .hero {
             height: 80vh;
-            background: linear-gradient(rgba(0,0,0,0.5), var(--bg)), url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background: linear-gradient(rgba(0,0,0,0.6), var(--bg)), url('images/banner.png');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -227,7 +245,10 @@
 <body>
 
     <header id="main-header">
-        <div class="logo">LIVEPLUS</div>
+        <div class="logo">
+            <img src="images/logo.png" alt="LivePlus Logo">
+            LIVEPLUS
+        </div>
         <nav>
             <ul>
                 <li><a href="#">الرئيسية</a></li>
@@ -244,8 +265,17 @@
             <h1>شاهد أفضل الأفلام والمسلسلات مجاناً</h1>
             <p>استمتع بتجربة سينمائية فريدة على هاتفك مع تطبيق LIVEPLUS. أفلام، مسلسلات، وقنوات مباشرة بجودة عالية.</p>
             <div class="cta-buttons">
-                <a href="https://raw.githubusercontent.com/sidfloki/LivePlus-App/main/LivePlus_Final_Fixed_Connection.apk" class="btn btn-primary" target="_blank">تحميل مباشر (GitHub)</a>
-                <a href="https://www.mediafire.com/file/o56q0v7st50eo6p/LivePlus_Final_Fixed_Connection.apk/file" class="btn btn-primary" target="_blank" style="background: #2d89ef;">رابط بديل (MediaFire)</a>
+                <a href="https://www.mediafire.com/file/a5y2fdamg7d3t39/LivePlus_V1.1.5_Final.apk/file" class="btn btn-primary" style="padding: 20px 60px; font-size: 1.5rem;">تحميل الإصدار المستقر V1.1.5</a>
+            </div>
+            
+            <div class="whats-new" style="margin-top: 3rem; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: inline-block; text-align: right; width: 100%;">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">🚀 الجديد في الإصدار المستقر V1.1.5:</h3>
+                <ul style="color: #ccc; list-style: none; padding: 0; line-height: 2;">
+                    <li>✅ تثبيت السيرفر النهائي (iptv-premium-ott.com) بشكل دائم</li>
+                    <li>✅ حذف جميع الإعدادات والسيرفرات القديمة تماماً</li>
+                    <li>✅ ربط مباشر ومستقر للأفلام والمسلسلات والقنوات</li>
+                    <li>✅ تحسين شامل لأداء التطبيق وسرعة الاستجابة</li>
+                </ul>
             </div>
         </div>
     </section>

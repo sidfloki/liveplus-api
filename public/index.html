@@ -1,9 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LivePlus Web Dashboard</title>
+    <title>LivePlus - Stream Movies, Series & Live TV</title>
+    <meta name="description" content="LivePlus is the ultimate media streaming app for Android. Watch movies, series, and live TV channels in 4K quality. Download LivePlus APK now.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://streamvault-5f4a7.web.app/">
+    <meta property="og:title" content="LivePlus - Your Ultimate Media Hub">
+    <meta property="og:description" content="Stream movies, series, and live TV in 4K. Download the latest LivePlus APK.">
+    <meta property="og:image" content="https://streamvault-5f4a7.web.app/images/banner.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://streamvault-5f4a7.web.app/">
+    <meta property="twitter:title" content="LivePlus - Your Ultimate Media Hub">
+    <meta property="twitter:description" content="Stream movies, series, and live TV in 4K. Download the latest LivePlus APK.">
+    <meta property="twitter:image" content="https://streamvault-5f4a7.web.app/images/banner.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -25,7 +42,7 @@
 
         header {
             padding: 2rem;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -35,11 +52,20 @@
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 2rem;
             font-weight: bold;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
         }
 
         .stats {
@@ -151,111 +177,187 @@
         }
     </style>
 </head>
+
 <body>
 
-<header>
-    <div class="logo">LivePlus</div>
-    <div class="stats" id="stats-container">
-        <!-- Stats will appear here -->
+    <header>
+        <div class="logo">
+            <img src="images/logo.png" alt="LivePlus Logo">
+            LivePlus
+        </div>
+        <nav style="display: flex; gap: 20px;">
+            <a href="#movies" style="color: white; text-decoration: none;">Movies</a>
+            <a href="#series" style="color: white; text-decoration: none;">Series</a>
+            <a href="#channels" style="color: white; text-decoration: none;">Live TV</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Ultimate Entertainment Anywhere</h1>
+            <p>Stream your favorite movies, series, and live channels in 4K. Download the latest version for Android and
+                start watching now.</p>
+
+            <div class="download-section" style="display: flex; gap: 15px; margin-top: 2rem; justify-content: center;">
+                <a href="https://www.mediafire.com/file/a5y2fdamg7d3t39/LivePlus_V1.1.5_Final.apk/file" class="hero-btn primary" style="font-size: 1.5rem; padding: 1rem 3rem;">
+                    <img src="images/logo.png" width="30">
+                    Download V1.1.5 (Stable)
+                </a>
+            </div>
+            
+            <div class="whats-new" style="margin-top: 3rem; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: inline-block; text-align: left;">
+                <h3 style="color: var(--primary); margin-bottom: 10px;">🚀 What's New in V1.1.5 (Final Stable):</h3>
+                <ul style="color: var(--text-muted); list-style: none; padding: 0;">
+                    <li>✅ HARDCODED Stable Server (iptv-premium-ott.com)</li>
+                    <li>✅ Removed all previous server configurations</li>
+                    <li>✅ Fixed Movies/Series/Channels direct connection</li>
+                    <li>✅ Enhanced UI Performance & Stability</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <a href="liveplus_v2.apk" class="download-btn" style="
-        background: var(--primary);
-        color: white;
-        text-decoration: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 0.9rem;
-        transition: opacity 0.3s;
-    ">Download APK</a>
-</header>
 
-<div class="container">
-    <div class="filter-tabs" id="category-tabs">
-        <div class="tab active" onclick="filterCategory('all')">All</div>
+    <div class="container">
+        <h2 class="section-title">Explore Content</h2>
+        <div class="filter-tabs" id="category-tabs">
+            <div class="tab active" onclick="filterCategory('all')">All</div>
+        </div>
+
+        <div id="loading">Loading library...</div>
+        <div class="grid" id="main-grid"></div>
     </div>
 
-    <div id="loading">Loading playlist...</div>
-    <div class="grid" id="main-grid"></div>
-</div>
-
-<script>
-    let playlistItems = [];
-    let categories = new Set();
-
-    async function loadPlaylist() {
-        try {
-            const response = await fetch('playlist.m3u');
-            const text = await response.text();
-            parseM3U(text);
-        } catch (error) {
-            console.error('Error loading playlist:', error);
-            document.getElementById('loading').innerHTML = 'Failed to load playlist. Make sure playlist.m3u exists.';
+    <style>
+        .hero {
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(20, 20, 20, 1)), url('images/banner.png');
+            background-size: cover;
+            background-position: center;
+            padding: 0 2rem;
         }
-    }
 
-    function parseM3U(content) {
-        const lines = content.split('\n');
-        let currentItem = null;
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (line.startsWith('#EXTINF:')) {
-                const info = line;
-                const name = info.split(',')[1] || 'Unknown';
-                const logoMatch = info.match(/tvg-logo="([^"]*)"/);
-                const groupMatch = info.match(/group-title="([^"]*)"/);
-                
-                currentItem = {
-                    name: name,
-                    logo: logoMatch ? logoMatch[1] : '',
-                    category: groupMatch ? groupMatch[1] : 'General',
-                    url: ''
-                };
-                if (currentItem.category) categories.add(currentItem.category);
-            } else if (line.startsWith('http')) {
-                if (currentItem) {
-                    currentItem.url = line;
-                    playlistItems.push(currentItem);
-                    currentItem = null;
-                }
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .hero-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .hero-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .hero-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+
+    <script>
+        let playlistItems = [];
+        let categories = new Set();
+
+        async function loadPlaylist() {
+            try {
+                const response = await fetch('playlist.m3u');
+                const text = await response.text();
+                parseM3U(text);
+            } catch (error) {
+                console.error('Error loading playlist:', error);
+                document.getElementById('loading').innerHTML = 'Failed to load playlist. Make sure playlist.m3u exists.';
             }
         }
 
-        renderDashboard();
-    }
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            let currentItem = null;
 
-    function renderDashboard() {
-        document.getElementById('loading').style.display = 'none';
-        
-        // Render Tabs
-        const tabsContainer = document.getElementById('category-tabs');
-        categories.forEach(cat => {
-            const tab = document.createElement('div');
-            tab.className = 'tab';
-            tab.innerText = cat;
-            tab.onclick = () => filterCategory(cat, tab);
-            tabsContainer.appendChild(tab);
-        });
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const info = line;
+                    const name = info.split(',')[1] || 'Unknown';
+                    const logoMatch = info.match(/tvg-logo="([^"]*)"/);
+                    const groupMatch = info.match(/group-title="([^"]*)"/);
 
-        // Render Stats
-        const statsContainer = document.getElementById('stats-container');
-        statsContainer.innerHTML = `
+                    currentItem = {
+                        name: name,
+                        logo: logoMatch ? logoMatch[1] : '',
+                        category: groupMatch ? groupMatch[1] : 'General',
+                        url: ''
+                    };
+                    if (currentItem.category) categories.add(currentItem.category);
+                } else if (line.startsWith('http')) {
+                    if (currentItem) {
+                        currentItem.url = line;
+                        playlistItems.push(currentItem);
+                        currentItem = null;
+                    }
+                }
+            }
+
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            document.getElementById('loading').style.display = 'none';
+
+            // Render Tabs
+            const tabsContainer = document.getElementById('category-tabs');
+            categories.forEach(cat => {
+                const tab = document.createElement('div');
+                tab.className = 'tab';
+                tab.innerText = cat;
+                tab.onclick = () => filterCategory(cat, tab);
+                tabsContainer.appendChild(tab);
+            });
+
+            // Render Stats
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = `
             <div class="stat-item">Channels: ${playlistItems.length}</div>
             <div class="stat-item">Categories: ${categories.size}</div>
         `;
 
-        displayItems(playlistItems);
-    }
+            displayItems(playlistItems);
+        }
 
-    function displayItems(items) {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
+        function displayItems(items) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
 
-        items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
                 <img class="card-img" src="${item.logo || 'https://via.placeholder.com/200x300?text=LivePlus'}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
                 <div class="badge">${item.category}</div>
                 <div class="card-info">
@@ -263,27 +365,28 @@
                     <div class="card-meta">Click to play</div>
                 </div>
             `;
-            card.onclick = () => window.open(item.url, '_blank');
-            grid.appendChild(card);
-        });
-    }
-
-    function filterCategory(cat, tabElement) {
-        // Update tabs
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        if (tabElement) tabElement.classList.add('active');
-        else document.querySelector('.tab').classList.add('active');
-
-        if (cat === 'all') {
-            displayItems(playlistItems);
-        } else {
-            const filtered = playlistItems.filter(i => i.category === cat);
-            displayItems(filtered);
+                card.onclick = () => window.open(item.url, '_blank');
+                grid.appendChild(card);
+            });
         }
-    }
 
-    window.onload = loadPlaylist;
-</script>
+        function filterCategory(cat, tabElement) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (tabElement) tabElement.classList.add('active');
+            else document.querySelector('.tab').classList.add('active');
+
+            if (cat === 'all') {
+                displayItems(playlistItems);
+            } else {
+                const filtered = playlistItems.filter(i => i.category === cat);
+                displayItems(filtered);
+            }
+        }
+
+        window.onload = loadPlaylist;
+    </script>
 
 </body>
+
 </html>
